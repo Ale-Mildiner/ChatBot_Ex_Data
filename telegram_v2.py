@@ -5,7 +5,7 @@ import re
 import sqlite3
 
 # Reemplaza 'YOUR_TOKEN' con el token de tu bot
-TOKEN = '6949294693:AAHlzu6OutvtW98MAVhWilgCxhwlgkUgxuY'
+TOKEN = 'TOKEN'
 
 # Definir estados de conversación
 REQUESTING_DNI = 1
