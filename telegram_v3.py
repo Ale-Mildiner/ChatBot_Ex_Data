@@ -16,38 +16,34 @@ user_dni = {}
 
 # Función para manejar cualquier mensaje
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    user_id = update.message.from_user.id
 
-    # Si el DNI ya ha sido registrado, confirmar y reiniciar
-    if user_id in user_dni:
-        await update.message.reply_text(f'Gracias, ya tenemos tu DNI: {user_dni[user_id]}. Puedes enviar cualquier mensaje para empezar de nuevo.')
-        return FINISHED
-
-    # Si no se ha registrado el DNI, pedirlo
-    await update.message.reply_text('Por favor, envíame tu número de DNI.')
+    await update.message.reply_text('Hola soy el Bot de GS Bio donde podés consultar el estado de tu pedido. \nPor favor, envíame tu número de DNI para continuar.')
     return REQUESTING_DNI
 
 # Función para manejar el DNI
 async def handle_dni(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_id = update.message.from_user.id
     dni = update.message.text.strip()
-
+    
+    value_to_return = REQUESTING_DNI
     # Validar el formato del DNI (por ejemplo, solo números y longitud de 8 dígitos)
     if re.fullmatch(r'\d{8}', dni):
         user_dni[user_id] = dni
         estado = obtener_estado_pedido(dni)
         if estado != False:
-            response_message = f"Muchas gracias, tu DNI ({dni}) ha sido recibido. El estado de tu pedido es <i><b>{estado}</b></i>."
+            response_message = f"Muchas gracias, tu DNI <b>({dni})</b> ha sido recibido. El estado de tu pedido es <i><b>{estado}</b></i>."
             await update.message.reply_text(response_message, parse_mode='HTML')
-            return FINISHED
+            value_to_return = FINISHED
         
         else:
-            response_message = f"Tu DNI ({dni}) no está registrado o ha sido mal ingresado, ingreselo nuevamente"
+            response_message = f"Tu DNI <b>({dni})</b> no está registrado o ha sido mal ingresado, por favor ingreselo nuevamente"
             await update.message.reply_text(response_message)
-            return REQUESTING_DNI
+            value_to_return = REQUESTING_DNI
     else:
-        await update.message.reply_text('Número de DNI incorrecto. Por favor, ingréselo nuevamente.')
-        return REQUESTING_DNI
+        await update.message.reply_text('El DNI ingresado no tiene los dígitos necesarios. Por favor, ingréselo nuevamente.')
+        value_to_return = REQUESTING_DNI
+    
+    return value_to_return
 
 # Función para reiniciar la conversación
 async def reset_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -55,15 +51,12 @@ async def reset_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # Limpiar el DNI registrado para el usuario
     if user_id in user_dni:
         del user_dni[user_id]
-    await update.message.reply_text('Por favor, envíame tu número de DNI.')
+    await update.message.reply_text('Hola soy el Bot de GS Bio donde podés consultar el estado de tu pedido. \n Por favor, envíame tu número de DNI para continuar con el pedido.')
     return REQUESTING_DNI
 
 def obtener_estado_pedido(dni):
-    # Conectar a la base de datos SQLite (ajusta el nombre de la base de datos si es necesario)
     conn = sqlite3.connect('example.db')
     cursor = conn.cursor()
-    
-    # Consulta SQL para obtener el estado del pedido basado en el DNI
     query = "SELECT estado_pedido FROM pedidos WHERE DNI = ?"
     
     state = False
@@ -92,11 +85,7 @@ def obtener_estado_pedido(dni):
     return state
 
 
-
-
-
 def main() -> None:
-    # Crea la instancia de Application en lugar de Updater
     application = Application.builder().token(TOKEN).build()
 
     # Crea el ConversationHandler
