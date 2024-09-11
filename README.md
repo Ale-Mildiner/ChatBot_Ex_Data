@@ -6,9 +6,9 @@ Librerias requeridas
 
 Para esto inicializar un nuevo enviorment e instalar el archivo "requirments.txt" utilizando:
 
-´´´
+```
 pip install requirments.txt
-´´´
+```
 
 - Flask
 - sqlite3
